@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <cocos2d.h>
+#include "mod_utils.hpp"
 using namespace cocos2d;
 
 inline CCSprite* (__cdecl* CCSprite_create)(const char* name);

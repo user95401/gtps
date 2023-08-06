@@ -12,6 +12,7 @@ using namespace cocos2d::extension;
 using namespace gd;
 
 #include "cocosHooks.hpp" //ну и псих бляtь
+#include "SoundRelated.hpp" //ну и псих бляtь
 
 #include "MenuLayer.hpp"
 const char* MenuLayerMod::version = "1.0"; 
@@ -25,6 +26,11 @@ const char* MenuLayerMod::onYouTube = "cuming_soon";
 
 DWORD WINAPI thread_func(void* hModule) {
 
+    //search
+    CCFileUtils::sharedFileUtils()->addSearchPath("gtps/Resources/sprites");
+    CCFileUtils::sharedFileUtils()->addSearchPath("gtps/Resources/data");
+    CCFileUtils::sharedFileUtils()->addSearchPath("gtps/Resources/sounds");
+
     // initialize minhook
     MH_Initialize();
 
@@ -32,11 +38,16 @@ DWORD WINAPI thread_func(void* hModule) {
     CC_HOOK("?createWithSpriteFrameName@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_createWithSpriteFrameName, true);
     CC_HOOK("?create@CCLabelBMFont@cocos2d@@SAPAV12@PBD0@Z", CCLabelBMFont_create, true);
     LoadingLayerHook();
+    CreateSoundRelatedHooks();
 
     MenuLayerHook();
     
     // enable all hooks you've created with minhook
     MH_EnableHook(MH_ALL_HOOKS);
+
+    //title
+    SetWindowTextW(GetForegroundWindow(), L"Gemetry Trash Privete Servero");
+
     return 0;
 }
 

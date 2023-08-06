@@ -1,4 +1,5 @@
 ﻿#include "MenuLayer.hpp"
+bool seenWarn = false;
 void MenuLayerMod::versionsLink(cocos2d::CCObject* pSender) {
     CCApplication::sharedApplication()->openURL(versionsUrl);
 }
@@ -45,6 +46,16 @@ bool __fastcall MenuLayer_init_H(MenuLayer* self) {
     request->setResponseCallback(self, httpresponse_selector(MenuLayerMod::onUpdateHttpResponse));
     CCHttpClient::getInstance()->send(request);
     request->release();
+
+    CCNode* centerNode = CCNode::create();
+    centerNode->setPosition(CCMenu::create()->getPosition());
+    self->addChild(centerNode);
+
+    auto warnlbl = CCLabelTTF::create("This game contains flash lights, loud noises and jumpscares.\n Also its buggy shit. Have a good game, man, thanks for playin <3", 
+        "Comic Sans MS", 10);
+    warnlbl->setPositionY(-60.f);
+    warnlbl->runAction(CCSequence::create(CCDelayTime::create(3.0), CCFadeOut::create(0.5), nullptr));
+    if (!seenWarn) { seenWarn = true; centerNode->addChild(warnlbl); }
 
     return true;
 }

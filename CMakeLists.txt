@@ -13,9 +13,13 @@ add_subdirectory(../curly-eureka/cocos-headers cocos-headers-build)
 add_subdirectory(../curly-eureka/minhook minhook-build)
 
 # Add the source to the executable file of this project.
-file(GLOB_RECURSE src yo/*)
-add_library(${PROJECT_NAME} SHARED ${src} ${curly-eureka-src})
-target_include_directories(${PROJECT_NAME} PRIVATE ${curly-eureka-incl})
+file(GLOB_RECURSE src_main yo/*)
+file(GLOB_RECURSE src_layers yo/layers/*)
+add_library(${PROJECT_NAME} SHARED ${src_main} ${src_layers} ${curly-eureka-src})
+target_include_directories(${PROJECT_NAME} PRIVATE ${curly-eureka-incl}
+yo
+yo/layers
+)
 target_link_libraries(${PROJECT_NAME} minhook cocos2d)
 
 set(LIBRARY_OUTPUT_PATH "D:\\Games\\user666\\Gemetry_Trash_Private_Servero_v1.5\\gtps")

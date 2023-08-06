@@ -2,7 +2,8 @@
 using namespace std;
 const char* (__thiscall* LoadingLayer_getString)(LoadingLayer*);
 const char* __fastcall LoadingLayer_getString_H(LoadingLayer* self, void*) {
-    GameManager::sharedState()->fadeInMusic("menuLoop.mp3");
+    SoundRelated::playLoadingTheme();
+    //geting stringfdd
     const char* s[4] = {
         "Loading speedrun...",
         "user666 was here",
@@ -10,7 +11,7 @@ const char* __fastcall LoadingLayer_getString_H(LoadingLayer* self, void*) {
         "Pro tip: Don't crash",
     };
     srand(time(NULL));
-    return s[rand() % (4 + 1)];
+    return s[rand() % 4];
 }
 
 void LoadingLayerHook() {
