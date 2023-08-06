@@ -13,6 +13,9 @@ public:
     const char static* version;
     const char static* versionsUrl;
     const char static* upadateInfoUrl;
+    const char static* onFacebook;
+    const char static* onTwitter;
+    const char static* onYouTube;
     void versionsLink(cocos2d::CCObject*);
     void onUpdateHttpResponse(CCHttpClient*, CCHttpResponse*);
 };

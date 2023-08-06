@@ -15,8 +15,11 @@ using namespace gd;
 
 #include "MenuLayer.hpp"
 const char* MenuLayerMod::version = "1.0"; 
-const char* MenuLayerMod::upadateInfoUrl = "http://speeddash.ml/getInf.php?actualVersion";
-const char* MenuLayerMod::versionsUrl = "http://speeddash.ml/download";
+const char* MenuLayerMod::upadateInfoUrl = "getInf.php?actualVersion";
+const char* MenuLayerMod::versionsUrl = "download";
+const char* MenuLayerMod::onFacebook = "cuming_soon";
+const char* MenuLayerMod::onTwitter = "cuming_soon";
+const char* MenuLayerMod::onYouTube = "cuming_soon";
 
 #include "LoadingLayer.hpp"
 
@@ -25,12 +28,12 @@ DWORD WINAPI thread_func(void* hModule) {
     // initialize minhook
     MH_Initialize();
 
-    MenuLayerHook();
+    CC_HOOK("?create@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_create, true);
+    CC_HOOK("?createWithSpriteFrameName@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_createWithSpriteFrameName, true);
+    CC_HOOK("?create@CCLabelBMFont@cocos2d@@SAPAV12@PBD0@Z", CCLabelBMFont_create, true);
     LoadingLayerHook();
 
-    CC_HOOK("?create@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_createHook, CCSprite_createOrg);
-    CC_HOOK("?createWithSpriteFrameName@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_createWithSpriteFrameNameHook, CCSprite_createWithSpriteFrameNameOrg);
-    CC_HOOK("?create@CCLabelBMFont@cocos2d@@SAPAV12@PBD0@Z", CCLabelBMFont_createHook, CCLabelBMFont_createOrg);
+    MenuLayerHook();
     
     // enable all hooks you've created with minhook
     MH_EnableHook(MH_ALL_HOOKS);

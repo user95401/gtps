@@ -26,9 +26,9 @@ void MenuLayerMod::onUpdateHttpResponse(CCHttpClient* client, CCHttpResponse* re
     }
 }
 
-inline MenuLayer* (__cdecl* MenuLayer_init_org)(MenuLayer*);
-bool __fastcall MenuLayer_init_h(MenuLayer* self) {
-    if (!MenuLayer_init_org(self)) return false;
+inline MenuLayer* (__cdecl* MenuLayer_init)(MenuLayer*);
+bool __fastcall MenuLayer_init_H(MenuLayer* self) {
+    if (!MenuLayer_init(self)) return false;
     MenuLayerMod::versionLabel = CCLabelBMFont::create(MenuLayerMod::version, "chatFont.fnt");
     MenuLayerMod::versionLabel->setPosition({ CCDirector::sharedDirector()->getWinSize().width, 0 });
     MenuLayerMod::versionLabel->setAnchorPoint({ 1.1f, 0 });
@@ -49,22 +49,22 @@ bool __fastcall MenuLayer_init_h(MenuLayer* self) {
     return true;
 }
 
-inline MenuLayer* (__cdecl* MenuLayer_onFacebook_org)(MenuLayer*, void*, cocos2d::CCObject*);
-void __fastcall MenuLayer_onFacebook_h(MenuLayer* self, void* a, cocos2d::CCObject* pSender) { 
-    CCApplication::sharedApplication()->openURL("http://speeddash.hopto.org/redirect.php?onFacebook");
+inline MenuLayer* (__cdecl* MenuLayer_onFacebook)(MenuLayer*, void*, CCObject*);
+void __fastcall MenuLayer_onFacebook_H(MenuLayer* self, void*, CCObject* pSender) { 
+    CCApplication::sharedApplication()->openURL(MenuLayerMod::onFacebook);
 }
-inline MenuLayer* (__cdecl* MenuLayer_onTwitter_org)(MenuLayer*, void*, cocos2d::CCObject*);
-void __fastcall MenuLayer_onTwitter_h(MenuLayer* self, void* a, cocos2d::CCObject* pSender) {
-    CCApplication::sharedApplication()->openURL("http://speeddash.hopto.org/redirect.php?onTwitter");
+inline MenuLayer* (__cdecl* MenuLayer_onTwitter)(MenuLayer*, void*, CCObject*);
+void __fastcall MenuLayer_onTwitter_H(MenuLayer* self, void*, CCObject* pSender) {
+    CCApplication::sharedApplication()->openURL(MenuLayerMod::onTwitter);
 }
-inline MenuLayer* (__cdecl* MenuLayer_onYouTube_org)(MenuLayer*, void*, cocos2d::CCObject*);
-void __fastcall MenuLayer_onYouTube_h(MenuLayer* self, void* a, cocos2d::CCObject* pSender) {
-    CCApplication::sharedApplication()->openURL("http://speeddash.hopto.org/redirect.php?onYouTube");
+inline MenuLayer* (__cdecl* MenuLayer_onYouTube)(MenuLayer*, void*, CCObject*);
+void __fastcall MenuLayer_onYouTube_H(MenuLayer* self, void*, CCObject* pSender) {
+    CCApplication::sharedApplication()->openURL(MenuLayerMod::onYouTube);
 }
 
 void MenuLayerHook() {
-    GD_HOOK(base + 0x1907B0, MenuLayer_init);
-    GD_HOOK(base + 0x191960, MenuLayer_onFacebook);
-    GD_HOOK(base + 0x191980, MenuLayer_onTwitter);
-    GD_HOOK(base + 0x1919A0, MenuLayer_onYouTube);
+    HOOK(base + 0x1907B0, MenuLayer_init, false);
+    HOOK(base + 0x191960, MenuLayer_onFacebook, true);
+    HOOK(base + 0x191980, MenuLayer_onTwitter, true);
+    HOOK(base + 0x1919A0, MenuLayer_onYouTube, true);
 }
