@@ -21,6 +21,6 @@ void __fastcall playEffect_H(GameManager* self, void*, std::string sName) {
 }
 
 void CreateSoundRelatedHooks() {
-    HOOK(base + 0xC4BD0, fadeInMusic, false);
-    HOOK(base + 0x25450, playEffect, false);
+    HOOK(base + 0xC4BD0, fadeInMusic);
+    HOOK(base + 0x25450, playEffect);
 }

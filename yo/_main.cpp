@@ -1,5 +1,4 @@
-﻿#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+﻿#include <Windows.h>
 #include <iostream>
 #include <cocos2d.h>
 #include <gd.h>
@@ -15,38 +14,69 @@ using namespace gd;
 #include "SoundRelated.hpp" //ну и псих бляtь
 
 #include "MenuLayer.hpp"
-const char* MenuLayerMod::version = "1.0"; 
-const char* MenuLayerMod::upadateInfoUrl = "getInf.php?actualVersion";
-const char* MenuLayerMod::versionsUrl = "download";
-const char* MenuLayerMod::onFacebook = "cuming_soon";
-const char* MenuLayerMod::onTwitter = "cuming_soon";
-const char* MenuLayerMod::onYouTube = "cuming_soon";
+const char* MenuLayerExt::version = "1.5"; 
+const char* MenuLayerExt::upadateInfoUrl = "getInf.php?actualVersion";
+const char* MenuLayerExt::versionsUrl = "download";
+const char* MenuLayerExt::onFacebook = "cuming_soon";
+const char* MenuLayerExt::onTwitter = "cuming_soon";
+const char* MenuLayerExt::onYouTube = "cuming_soon";
 
 #include "LoadingLayer.hpp"
+#include "PlayLayer.hpp"
+#include "deco_objects.hpp"
+
+inline void(__thiscall* MoreOptionsLayer_addToggle)(MoreOptionsLayer*, const char*, const char*, const char*);
+void __fastcall MoreOptionsLayer_addToggle_H(MoreOptionsLayer* self, void*, const char* name, const char* key, const char* info) {
+    if (string(key) == "0026") {//at first (autoRetry)
+        //row1
+        MoreOptionsLayer_addToggle(self, "bad play quality", "542984", "it makes PlayLayer <cr>worse</c>");
+        HideEveryFrame = true;
+        MoreOptionsLayer_addToggle(self, "", "", nullptr);
+        //row2
+        MoreOptionsLayer_addToggle(self, "", "", nullptr);
+        MoreOptionsLayer_addToggle(self, "", "", nullptr);
+        //row3
+        MoreOptionsLayer_addToggle(self, "", "", nullptr);
+        MoreOptionsLayer_addToggle(self, "", "", nullptr);
+        //row4
+        MoreOptionsLayer_addToggle(self, "", "", nullptr);
+        MoreOptionsLayer_addToggle(self, "", "", nullptr);
+        //title row
+        HideEveryFrame = true;
+        MoreOptionsLayer_addToggle(self, "", "", nullptr);
+        MoreOptionsLayer_addToggle(self, "of modification 950df1", "", nullptr);
+        HideEveryFrame = false;
+    }
+    MoreOptionsLayer_addToggle(self, name, key, info);
+}
 
 DWORD WINAPI thread_func(void* hModule) {
-
-    //search
-    CCFileUtils::sharedFileUtils()->addSearchPath("gtps/Resources/sprites");
-    CCFileUtils::sharedFileUtils()->addSearchPath("gtps/Resources/data");
-    CCFileUtils::sharedFileUtils()->addSearchPath("gtps/Resources/sounds");
-
-    // initialize minhook
+    //instant hooks
     MH_Initialize();
 
-    CC_HOOK("?create@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_create, true);
-    CC_HOOK("?createWithSpriteFrameName@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_createWithSpriteFrameName, true);
-    CC_HOOK("?create@CCLabelBMFont@cocos2d@@SAPAV12@PBD0@Z", CCLabelBMFont_create, true);
-    LoadingLayerHook();
-    CreateSoundRelatedHooks();
+    LoadingLayerExt::SetSearchPaths();
+    LoadingLayerExt::CreateHooks();
 
-    MenuLayerHook();
+    CC_HOOK("?create@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_create);
+    CC_HOOK("?createWithSpriteFrameName@CCSprite@cocos2d@@SAPAV12@PBD@Z", CCSprite_createWithSpriteFrameName);
+    CC_HOOK("?create@CCLabelBMFont@cocos2d@@SAPAV12@PBD0@Z", CCLabelBMFont_create);
+
+    MH_EnableHook(MH_ALL_HOOKS);
+
+    // safe hooks
+    MH_SafeInitialize();
+
+    CreateSoundRelatedHooks();
+    CreateMenuLayerHooks();
+    PlayLayerExt::CreateHooks();
+    HOOK(base + 0x1DF6B0, MoreOptionsLayer_addToggle);
+    deco_objects::setup();
+
+    if ("iconsPatch") {
+    }
     
     // enable all hooks you've created with minhook
     MH_EnableHook(MH_ALL_HOOKS);
-
-    //title
-    SetWindowTextW(GetForegroundWindow(), L"Gemetry Trash Privete Servero");
 
     return 0;
 }
