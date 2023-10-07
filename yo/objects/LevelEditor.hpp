@@ -11,4 +11,5 @@ using namespace gd;
 class LevelEditor {
 public:
 	inline static GameObject* lastSelectedObj;
+	static void CreateHooks();
 };

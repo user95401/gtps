@@ -1,28 +1,46 @@
 ﻿#include "MenuLayer.hpp"
 bool seenWarn = false;
-void MenuLayerExt::versionsLink(cocos2d::CCObject* pSender) {
-    CCApplication::sharedApplication()->openURL(versionsUrl);
-}
+int kills;
+CCLabelTTF* killsLbl;
 void MenuLayerExt::hideContent(cocos2d::CCObject* pSender) {
     for (int i = 0; i < me->getChildrenCount(); ++i) {
         if (i != 0) {
-            /*me->removeChild*/(reinterpret_cast<CCNode*>(me->getChildren()->objectAtIndex(i)))->runAction(CCEaseExponentialIn::create(CCMoveBy::create(0.5, { 1000.f + (i*500.f), 0 })));
+            /*me->removeChild*/(reinterpret_cast<CCNode*>(me->getChildren()->objectAtIndex(i)))->runAction(CCEaseExponentialIn::create(CCMoveBy::create(0.5, { 1000.f + (i * 500.f), 0 })));
             if (reinterpret_cast<CCNode*>(me->getChildren()->objectAtIndex(1))->getPositionX() > 500) me->removeChild(reinterpret_cast<CCNode*>(me->getChildren()->objectAtIndex(i)));
         }
     }
+    CCMenu* Menu = CCMenu::create();
+    Menu->setPosition(CCPoint());
+    me->addChild(Menu);
     //resetBtn
-    auto resetBtn = CCMenu::createWithItem(CCMenuItemSpriteExtra::create(ModUtils::createSprite("GJ_backBtn_001.png"), me, menu_selector(CreatorLayer::onBack)));
+    auto resetBtn = CCMenuItemSpriteExtra::create(ModUtils::createSprite("GJ_backBtn_001.png"), me, menu_selector(CreatorLayer::onBack));
     resetBtn->setPosition({ -0.f,-100.f });
     resetBtn->runAction(CCEaseExponentialInOut::create(CCMoveTo::create(1.0, CCPoint(32.f, 32.f))));
-    me->addChild(resetBtn, 5);
+    Menu->addChild(resetBtn, 5);
     //resetSongBtn
-    auto resetSongBtn = CCMenu::createWithItem(CCMenuItemSpriteExtra::create(ModUtils::createSprite("GJ_musicOnBtn_001.png"), me, menu_selector(MenuLayerExt::resetSong)));
+    auto resetSongBtn = CCMenuItemSpriteExtra::create(ModUtils::createSprite("GJ_musicOnBtn_001.png"), me, menu_selector(MenuLayerExt::resetSong));
     resetSongBtn->setPosition({ -0.f,-100.f });
     resetSongBtn->runAction(CCEaseExponentialInOut::create(CCMoveTo::create(1.0, CCPoint(82.f, 32.f))));
-    me->addChild(resetSongBtn, 5);
+    Menu->addChild(resetSongBtn, 5);
+    //optionsBtn
+    auto optionsBtn = CCMenuItemSpriteExtra::create(ModUtils::createSprite("GJ_optionsBtn02_001.png"), me, menu_selector(MenuLayerExt::onOptions));
+    optionsBtn->setPosition({ -0.f,-100.f });
+    optionsBtn->runAction(CCEaseExponentialInOut::create(CCMoveTo::create(1.0, CCPoint(126.f, 32.f))));
+    Menu->addChild(optionsBtn, 5);
+    //kills
+    kills = 0;
+    killsLbl = CCLabelTTF::create("0x", "Comic Sans MS", 32.f);
+    killsLbl->setAnchorPoint({ -0.3f, 1.f });
+    killsLbl->setHorizontalAlignment(CCTextAlignment::kCCTextAlignmentLeft);
+    killsLbl->setPosition({ -100.f, CCDirector::sharedDirector()->getScreenTop() });
+    killsLbl->runAction(CCEaseExponentialInOut::create(CCMoveTo::create(1.0, CCPoint(0.f, CCDirector::sharedDirector()->getScreenTop()))));
+    Menu->addChild(killsLbl, 5);
 }
 void MenuLayerExt::resetSong(cocos2d::CCObject* pSender) {
     GameManager::sharedState()->fadeInMusic("menuLoop.mp3");
+}
+void MenuLayerExt::versionsLink(cocos2d::CCObject* pSender) {
+    CCApplication::sharedApplication()->openURL(versionsUrl);
 }
 void MenuLayerExt::onUpdateHttpResponse(CCHttpClient* client, CCHttpResponse* response) {
     dontAlertVerAgain = true;
@@ -53,7 +71,9 @@ void MenuLayerExt::onUpdateHttpResponse(CCHttpClient* client, CCHttpResponse* re
 inline MenuLayerExt* (__cdecl* MenuLayer_init)(MenuLayerExt*);
 bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     if (!MenuLayer_init(self)) return false;
+    twoTimesLayerInitHookEscape(self);
     self->me = self;
+
     MenuLayerExt::versionLabel = CCLabelBMFont::create(MenuLayerExt::version, "chatFont.fnt");
     MenuLayerExt::versionLabel->setPosition({ CCDirector::sharedDirector()->getWinSize().width, 0 });
     MenuLayerExt::versionLabel->setAnchorPoint({ 1.1f, 0 });
@@ -71,11 +91,29 @@ bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     CCHttpClient::getInstance()->send(request);
     request->release();
 
+    //Menu
+    CCMenu* menu = CCMenu::create();//geode wtf reinterpret_cast<CCMenu*>(self->m_profileBtn->getParent());
+    self->addChild(menu, reinterpret_cast<CCMenu*>(self->m_profileBtn->getParent())->getZOrder());
+    //centerNode
     CCNode* centerNode = CCNode::create();
     centerNode->setPosition(CCMenu::create()->getPosition());
     self->addChild(centerNode);
 
-    CCMenu* menu = reinterpret_cast<CCMenu*>(self->m_profileBtn->getParent());
+    //hideContentBtn, killsLbl
+    CCMenuItemSpriteExtra* hideContentBtn = CCMenuItemSpriteExtra::create(ModUtils::createSprite("GJ_deleteAllIcon_001.png"), menu, menu_selector(MenuLayerExt::hideContent));
+    hideContentBtn->setPositionY(-68.000);
+    menu->addChild(hideContentBtn);
+    killsLbl = CCLabelTTF::create();
+    killsLbl->setAnchorPoint({ -110.3f, 111.f });
+    self->addChild(killsLbl);
+
+    //flyinamopgus!!!
+    CCSprite* flyinAmogus = CCSprite::create("flyinAmogus.png");
+    flyinAmogus->setPosition({ CCDirector::sharedDirector()->getScreenRight(), CCDirector::sharedDirector()->getScreenTop() });
+    flyinAmogus->runAction(CCRepeatForever::create(CCRotateBy::create(0.1, 1)));
+    if (rand() % 3 == 2) flyinAmogus->setColor(GameManager::sharedState()->colorForIdx(GameManager::sharedState()->getPlayerColor()));
+    if (rand() % 3 == 1) flyinAmogus->setColor(GameManager::sharedState()->colorForIdx(rand() % 22));
+    self->addChild(flyinAmogus);
 
     //warn lbl bg
     CCScale9Sprite* warnlblbg = CCScale9Sprite::create("square02_001.png");
@@ -83,7 +121,7 @@ bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     warnlblbg->setPositionY(-68.f);
     warnlblbg->setOpacity(120);
     //warn lbl
-    auto warnlbl = CCLabelTTF::create("This game contains flash lights, loud noises and jumpscares.\n Also its buggy shit. Have a good game, man, thanks for playin <3", 
+    auto warnlbl = CCLabelTTF::create("Game may contain explicit lyrics and offensive jokes - don't take it seriously!\n Also its buggy shit. Have a good game, man, thanks for playin <3",
         "Comic Sans MS", 10.f);
     warnlbl->setScale(2.f);
     warnlbl->setAnchorPoint(CCPoint(-0.015f, -0.15f));
@@ -92,12 +130,9 @@ bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     warnlblbg->setScale(0.5f);
     warnlblbg->addChild(warnlbl);
     //fadeanim
-    warnlblbg->runAction(CCSequence::create(CCDelayTime::create(3.0f), CCFadeOut::create(0.5f), nullptr));
-    warnlbl->runAction(CCSequence::create(CCDelayTime::create(3.0f), CCFadeOut::create(0.5f), nullptr));
+    warnlblbg->runAction(CCSequence::create(CCDelayTime::create(10.0f), CCFadeTo::create(0.5f, 0), nullptr));
+    warnlbl->runAction(CCSequence::create(CCDelayTime::create(10.0f), CCFadeTo::create(0.5f, 0), nullptr));
 
-    CCMenuItemSpriteExtra* hideContentBtn = CCMenuItemSpriteExtra::create(ModUtils::createSprite("GJ_deleteAllIcon_001.png"), menu, menu_selector(MenuLayerExt::hideContent));
-    hideContentBtn->setPositionY(-68.000);
-    menu->addChild(hideContentBtn);
     return true;
 }
 
@@ -114,9 +149,35 @@ void __fastcall MenuLayer_onYouTube_H(void*, CCObject* pSender) {
     CCApplication::sharedApplication()->openURL(MenuLayerExt::onYouTube);
 }
 
+inline MenuGameLayer* (__cdecl* MenuGameLayer_destroyPlayer)(MenuGameLayer* self);//= win 0x190100;
+void __fastcall MenuGameLayer_destroyPlayer_H(MenuGameLayer* self, void*) {
+    MenuGameLayer_destroyPlayer(self);
+    if (!killsLbl) return;
+    killsLbl->runAction(CCSequence::create(
+        CCScaleTo::create(0.03, 1.8),
+        CCEaseExponentialOut::create(CCScaleTo::create(0.15, 1.0)),
+        nullptr
+    ));
+    ++kills;
+    killsLbl->setString((std::to_string(kills)+"x").c_str());
+}
+
+MenuGameLayer* (__thiscall* MenuGameLayer_create)();
+CCLayer* __fastcall MenuGameLayer_create_H() {
+    auto level = GameLevelManager::sharedState()->getMainLevel(rand() % 25, false);
+    //level->m_sTempName = "isPreviewThing";
+    level->m_sLevelName = "isPreviewThing6380";
+    //"Always level MainMenu", "98549", "always show level instead deafult main menu bg"
+    if (!GameManager::sharedState()->getGameVariable("52905") && (rand() % 3 == 2 || GameManager::sharedState()->getGameVariable("98549"))) return PlayLayer::create(level);
+    else MenuGameLayer_create();
+}
+
 void CreateMenuLayerHooks() {
     HOOK(base + 0x1907B0, MenuLayer_init);
     HOOK(base + 0x191960, MenuLayer_onFacebook);
     HOOK(base + 0x191980, MenuLayer_onTwitter);
     HOOK(base + 0x1919A0, MenuLayer_onYouTube);
+
+    HOOK(base + 0x190100, MenuGameLayer_destroyPlayer);
+    HOOK(base + 0x18e6d0, MenuGameLayer_create);
 }

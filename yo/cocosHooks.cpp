@@ -7,15 +7,21 @@ CCSprite* CCSprite_create_H(const char* name) {
         //MessageBoxA(nullptr, name,"CCSprite_createHook -> no sprite", MB_ICONINFORMATION | MB_OK);
         return no;
     }
+    if (std::string(name) == "GJ_gradientBG.png" && !GameManager::sharedState()->getGameVariable("57862")) {
+        CCSprite* randomBackGround = ModUtils::createSprite(ModUtils::getRandomFileNameFromDir("gtps/Resources/randomBackGrounds", name).c_str());
+        randomBackGround->runAction(CCRepeatForever::create(CCTintTo::create(0.1f, 255, 255, 255)));
+        return randomBackGround;
+    }
     return CCSprite_create(name);
 }
 
 CCSprite* CCSprite_createWithSpriteFrameName_H(const char* name) {
-    if (strstr(std::string(name).c_str(), "cx1_14") || HideEveryFrame == true) {//blankSprite
+    if (strstr(std::string(name).c_str(), "cx1_14") || std::string(name) == HideEveryFrameByName.c_str() || HideEveryFrame == true) {//blankSprite
         CCSprite* no = CCSprite::create();
         //MessageBoxA(nullptr, name, "CCSprite_createWithSpriteFrameNameHook -> no sprite", MB_ICONINFORMATION | MB_OK);
         return no;
     }
+    if (ReplaceAllFramesByName::by != "" && ReplaceAllFramesByName::by == std::string(name)) name = ReplaceAllFramesByName::to.c_str();
     if (std::string(name) == "robtoplogo_small.png") {
         CCLabelBMFont* user666s_original = CCLabelBMFont::create("user666's\noriginal", "chatFont.fnt");
         user666s_original->setAlignment(kCCTextAlignmentCenter);
@@ -30,6 +36,11 @@ CCSprite* CCSprite_createWithSpriteFrameName_H(const char* name) {
         CCSprite* blankSprite = CCSprite::create();
         blankSprite->addChild(user666s_originalBig);
         return blankSprite;
+    }
+    if (std::string(name) == "GJ_logo_001.png") {
+        CCSprite* GJ_logo_001 = CCSprite::create(name);
+        GJ_logo_001->runAction(CCRepeatForever::create(CCSequence::create(CCEaseSineInOut::create(CCScaleBy::create(1.0, 1.025)), CCEaseSineInOut::create(CCScaleBy::create(1.0, 0.975)), nullptr)));
+        return GJ_logo_001;
     }
     //custom sprite process
     CSimpleIniA sprites_list;
@@ -93,6 +104,65 @@ CCSprite* CCSprite_createWithSpriteFrameName_H(const char* name) {
 }
 
 CCLabelBMFont* CCLabelBMFont_create_H(const char* str, const char* fntFile) {
+    //settings
+    if ("settings") {
+        if (std::string(str) == "uwuifier must be loaded...")
+            LoadLibraryA("gtps\\libs\\uwuifier.dll");
+        if (std::string(str) == "Settings for gtps") {
+            MoreOptionsLayer* _ModOptionsLayer = MoreOptionsLayer::create();
+            _ModOptionsLayer->m_bNoElasticity = true;
+            _ModOptionsLayer->show();
+        }
+        //config ini
+        if (
+            bool((std::string(str) == "sprites_list.ini") || 
+                (std::string(str) == "rand_sounds_list.ini") || 
+                (std::string(str) == "frames_list.ini"))
+            &&
+            std::string(fntFile) == "bigFont.fnt"
+            ) {
+            ReplaceAllFramesByName::by = "GJ_infoIcon_001.png";
+            ReplaceAllFramesByName::to = "geode.loader/pencil.png";
+        }
+        if (std::string(str) == "open up sprites_list.ini")
+            ShellExecute(NULL, ("open"), (CCFileUtils::sharedFileUtils()->fullPathForFilename("sprites_list.ini", 0).c_str()), NULL, NULL, 1);
+        if (std::string(str) == "open up frames_list.ini")
+            ShellExecute(NULL, ("open"), (CCFileUtils::sharedFileUtils()->fullPathForFilename("frames_list.ini", 0).c_str()), NULL, NULL, 1);
+        if (std::string(str) == "open up rand_sounds_list.ini")
+            ShellExecute(NULL, ("open"), (CCFileUtils::sharedFileUtils()->fullPathForFilename("rand_sounds_list.ini", 0).c_str()), NULL, NULL, 1);
+        //config folders
+        if (
+            bool((std::string(str) == "randomBackGrounds ") ||
+                (std::string(str) == "explodes ") ||
+                (std::string(str) == "menuLoops ") ||
+                (std::string(str) == "quitSounds "))
+            &&
+            std::string(fntFile) == "bigFont.fnt"
+            ) {
+            ReplaceAllFramesByName::by = "GJ_infoIcon_001.png";
+            ReplaceAllFramesByName::to = "gj_folderBtn_001.png";
+        }
+        if (std::string(str) == "open up randomBackGrounds")
+            ShellExecute(NULL, ("open"), (CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps/Resources/randomBackGrounds", 0).c_str()), NULL, NULL, 1);
+        if (std::string(str) == "open up quitSound")
+            ShellExecute(NULL, ("open"), (CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps/Resources/sounds/quitSound", 0).c_str()), NULL, NULL, 1);
+        if (std::string(str) == "open up explode")
+            ShellExecute(NULL, ("open"), (CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps/Resources/sounds/explode", 0).c_str()), NULL, NULL, 1);
+        if (std::string(str) == "open up menuLoop")
+            ShellExecute(NULL, ("open"), (CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps/Resources/sounds/menuLoop", 0).c_str()), NULL, NULL, 1);
+        if (
+            bool(ReplaceAllFramesByName::to == "gj_folderBtn_001.png" && ReplaceAllFramesByName::by == "GJ_infoIcon_001.png")
+            &&
+            std::string(str) == "                    "
+            &&
+            std::string(fntFile) == "bigFont.fnt"
+            )
+        {
+            ReplaceAllFramesByName::by = "";
+            ReplaceAllFramesByName::to == "";
+        }
+
+    }
     if (strstr(std::string(str).c_str(), "cx1_14") || HideEveryLabel) {
         CCLabelBMFont* lbl = CCLabelBMFont::create("", "gjFont01.fnt");
         lbl->setVisible(false);
@@ -104,7 +174,7 @@ CCLabelBMFont* CCLabelBMFont_create_H(const char* str, const char* fntFile) {
         str = "of modification";
         CCLabelBMFont* lbl = CCLabelBMFont::create(str, fntFile);
         CCPoint point = CCPoint();
-        point.x = (CCDirector::sharedDirector()->getScreenRight() / 2) - (lbl->getContentSize().width/2)/2;
+        point.x = (CCDirector::sharedDirector()->getScreenRight() / 2) - (lbl->getContentSize().width / 2) / 2;
         point.y = CCDirector::sharedDirector()->getScreenTop() - 53;
         lbl->runAction(CCRepeatForever::create(CCMoveTo::create(0.0, point)));
         return lbl;

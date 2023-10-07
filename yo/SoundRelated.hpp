@@ -8,9 +8,10 @@ using namespace cocos2d;
 using namespace cocos2d::extension;
 using namespace gd;
 
-class SoundRelated : GameSoundManager {
+class SoundRelated : public GameSoundManager {
 public:
 	static void playLoadingTheme();
+	inline static bool dontPlayMenuLoop;
 };
 
 void CreateSoundRelatedHooks();

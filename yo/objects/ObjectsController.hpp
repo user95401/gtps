@@ -4,11 +4,14 @@
 #include <cocos2d.h>
 #include <gd.h>
 #include "PlayLayer.hpp"
+#include "LevelEditor.hpp"
 using namespace cocos2d;
 using namespace cocos2d::extension;
 using namespace gd;
 using namespace std;
-class triggers {
+class ObjectsController {
 public:
-    static void Setup();
+    static void resetLevel(PlayLayerExt* self);
+    static void updateProgressbar(PlayLayerExt* self);
+    static void setup();
 };

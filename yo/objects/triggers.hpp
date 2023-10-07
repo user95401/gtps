@@ -9,7 +9,7 @@ using namespace cocos2d;
 using namespace cocos2d::extension;
 using namespace gd;
 using namespace std;
-class deco_objects {
+class triggers {
 public:
     static void activateObject(GameObject* self, PlayerObject* player);
     static void triggerObject(GameObject* self, GJBaseGameLayer* baseGameLayer);
