@@ -18,7 +18,6 @@ set(GEODE_MOD_OUTPUT_PATH "D:\\Games\\user666\\Gemetry_Trash_Private_Servero_v1.
 #curly-eureka
 include("C:\\Users\\Lenovo\\source\\curly-eureka\\CURLY-EUREKA-INCL.cmake")
 
-<<<<<<< HEAD
 # Add the source to the executable file of this project.
 file(GLOB_RECURSE src_main 
 yo/*
@@ -31,15 +30,6 @@ yo
 yo/layers
 yo/objects
 )
-=======
-#mod
-file(GLOB_RECURSE src
-src/* 
-src/Layers/* 
-src/ImGui/*
-)
-add_library(${PROJECT_NAME} SHARED ${src} ${curly_eureka_src})
->>>>>>> 1f452b3f9149b35eb63198849c53bf1ed8e976c7
 
 #geode-makeup
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/geode geode-build)
