@@ -1,8 +1,10 @@
-﻿#include "MenuLayer.hpp"
+﻿#include "MenuLayerExt.hpp"
+#include <urlmon.h>
+#pragma comment (lib, "urlmon.lib")
 bool seenWarn = false;
 int kills;
 CCLabelTTF* killsLbl;
-void MenuLayerExt::hideContent(cocos2d::CCObject* pSender) {
+void MenuLayerExt::hideContent(CCObject* pSender) {
     for (int i = 0; i < me->getChildrenCount(); ++i) {
         if (i != 0) {
             /*me->removeChild*/(reinterpret_cast<CCNode*>(me->getChildren()->objectAtIndex(i)))->runAction(CCEaseExponentialIn::create(CCMoveBy::create(0.5, { 1000.f + (i * 500.f), 0 })));
@@ -36,13 +38,13 @@ void MenuLayerExt::hideContent(cocos2d::CCObject* pSender) {
     killsLbl->runAction(CCEaseExponentialInOut::create(CCMoveTo::create(1.0, CCPoint(0.f, CCDirector::sharedDirector()->getScreenTop()))));
     Menu->addChild(killsLbl, 5);
 }
-void MenuLayerExt::resetSong(cocos2d::CCObject* pSender) {
+void MenuLayerExt::resetSong(CCObject* pSender) {
     GameManager::sharedState()->fadeInMusic("menuLoop.mp3");
 }
-void MenuLayerExt::versionsLink(cocos2d::CCObject* pSender) {
+void MenuLayerExt::versionsLink(CCObject* pSender) {
     CCApplication::sharedApplication()->openURL(versionsUrl);
 }
-void MenuLayerExt::onUpdateHttpResponse(CCHttpClient* client, CCHttpResponse* response) {
+void MenuLayerExt::onVersionCheckResponse(CCHttpClient* client, CCHttpResponse* response) {
     dontAlertVerAgain = true;
     std::vector<char>* responseData = response->getResponseData();
     std::string responseString(responseData->begin(), responseData->end());
@@ -56,6 +58,12 @@ void MenuLayerExt::onUpdateHttpResponse(CCHttpClient* client, CCHttpResponse* re
             CCEaseBounceOut::create(CCScaleTo::create(0.5f, versionLabel->getScale())),
             CCDelayTime::create(1.0),
             nullptr)));
+        checkNewVer->runAction(CCRepeatForever::create(CCSequence::create(
+            CCFadeIn::create(0.f),
+            CCDelayTime::create(1.f),
+            CCFadeOut::create(0.f),
+            CCDelayTime::create(6.f),
+            nullptr)));
         CCMenuItem* versionItem = CCMenuItem::create(versionLabel, menu_selector(MenuLayerExt::versionsLink));
         versionItem->setContentSize(versionLabel->getContentSize());
         versionItem->setAnchorPoint(versionLabel->getAnchorPoint());
@@ -67,8 +75,40 @@ void MenuLayerExt::onUpdateHttpResponse(CCHttpClient* client, CCHttpResponse* re
         MenuLayerSelf->addChild(versionsLinkMenu);
     }
 }
+void MenuLayerExt::onProfileUpdateHttpResponse(CCHttpClient* client, CCHttpResponse* response) {
+    std::vector<char>* responseData = response->getResponseData();
+    std::string responseString(responseData->begin(), responseData->end());
+    m_profileBtn->stopAllActions();
+    m_profileBtn->runAction(CCFadeIn::create(0.0));
+    if (responseString == "0") return;
+    // URLDownloadToFile returns S_OK on success
+    if (S_OK == URLDownloadToFile(NULL, responseString.c_str(), "gtps\\Resources\\UserContent\\.ProfileBtnImage", 0, NULL))
+    {
+        CCSprite* Profile = ModUtils::createSprite(".ProfileBtnImage");
+        if (Profile->getContentSize().width > Profile->getContentSize().height)
+            Profile->setScale(m_profileBtn->getContentSize().width / Profile->getContentSize().width);
+        else
+            Profile->setScale(m_profileBtn->getContentSize().height / Profile->getContentSize().height);
+        Profile->setPosition({ m_profileBtn->getContentSize().width / 2, m_profileBtn->getContentSize().height / 2 });
+        //Profile->setAnchorPoint(CCPoint());
+        m_profileBtn->addChild(Profile);
+        CCSprite* hiddenNode = dynamic_cast<CCSprite*>(m_profileBtn->getNormalImage());
+        hiddenNode->runAction(CCRepeatForever::create(CCFadeOut::create(0.f)));
+        m_profileBtn->setNormalImage(hiddenNode);
+        m_profileBtn->setSelectedImage(hiddenNode);
+        CCTextureCache::sharedTextureCache()->reloadTexture(".ProfileBtnImage");
+    }
+    else
+    {
+        AchievementNotifier::sharedState()->notifyAchievement("Profile Image", "Failed download Profile Image.\n", "deleteFilter_none_001.png", true);
+    }
+}
+void MenuLayerExt::onReload(CCObject*) {
+    GameManager::sharedState()->reloadAll(false, false, false);
+    //GameManager::sharedState()->reloadAll(GameManager::sharedState()->m_bSwitchModes, GameManager::sharedState()->m_bToFullscreen, true);
+}
 
-inline MenuLayerExt* (__cdecl* MenuLayer_init)(MenuLayerExt*);
+inline bool (__thiscall* MenuLayer_init)(MenuLayerExt*);
 bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     if (!MenuLayer_init(self)) return false;
     twoTimesLayerInitHookEscape(self);
@@ -83,13 +123,21 @@ bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     MenuLayerExt::versionLabel->runAction(CCRepeatForever::create(CCSequence::create(CCFadeTo::create(3, 180), CCFadeTo::create(3, 110), nullptr)));
     self->addChild(MenuLayerExt::versionLabel);
 
+    self->checkNewVer = ModUtils::createSprite("lookAtCorner.png");
+    self->checkNewVer->setAnchorPoint(CCPoint());
+    self->checkNewVer->setScaleX(CCDirector::sharedDirector()->getWinSize().width / self->checkNewVer->getContentSize().width);
+    self->checkNewVer->setScaleY(CCDirector::sharedDirector()->getWinSize().height / self->checkNewVer->getContentSize().height);
+    self->checkNewVer->runAction(CCRepeatForever::create(CCShaky3D::create(0.1f, CCSizeMake(5, 5), 9, false)));
+    self->checkNewVer->setOpacity({ 0 });
+    self->addChild(self->checkNewVer, 100, 5931);
+
     //udate if sddso herer
-    CCHttpRequest* request = new CCHttpRequest;
-    request->setRequestType(CCHttpRequest::HttpRequestType::kHttpPost);
-    request->setUrl(MenuLayerExt::upadateInfoUrl);
-    request->setResponseCallback(self, httpresponse_selector(MenuLayerExt::onUpdateHttpResponse));
-    CCHttpClient::getInstance()->send(request);
-    request->release();
+    CCHttpRequest* VersionCheck = new CCHttpRequest;
+    VersionCheck->setRequestType(CCHttpRequest::HttpRequestType::kHttpPost);
+    VersionCheck->setUrl(MenuLayerExt::upadateInfoUrl);
+    VersionCheck->setResponseCallback(self, httpresponse_selector(MenuLayerExt::onVersionCheckResponse));
+    CCHttpClient::getInstance()->send(VersionCheck);
+    VersionCheck->release();
 
     //Menu
     CCMenu* menu = CCMenu::create();//geode wtf reinterpret_cast<CCMenu*>(self->m_profileBtn->getParent());
@@ -107,13 +155,35 @@ bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     killsLbl->setAnchorPoint({ -110.3f, 111.f });
     self->addChild(killsLbl);
 
+    //reloadBtn
+    CCMenuItemSpriteExtra* reloadBtn = CCMenuItemSpriteExtra::create(ModUtils::createSprite("GJ_getSongInfoBtn_001.png"), menu, menu_selector(MenuLayerExt::onReload));
+    reloadBtn->setPositionY((fabs(menu->getContentSize().height / 2) - 53.f));
+    reloadBtn->setPositionX((-fabs(menu->getContentSize().width / 2)) + 18.f);
+    reloadBtn->gd::CCMenuItemSpriteExtra::setScale(0.8f);
+    menu->addChild(reloadBtn);
+
     //flyinamopgus!!!
-    CCSprite* flyinAmogus = CCSprite::create("flyinAmogus.png");
-    flyinAmogus->setPosition({ CCDirector::sharedDirector()->getScreenRight(), CCDirector::sharedDirector()->getScreenTop() });
-    flyinAmogus->runAction(CCRepeatForever::create(CCRotateBy::create(0.1, 1)));
-    if (rand() % 3 == 2) flyinAmogus->setColor(GameManager::sharedState()->colorForIdx(GameManager::sharedState()->getPlayerColor()));
-    if (rand() % 3 == 1) flyinAmogus->setColor(GameManager::sharedState()->colorForIdx(rand() % 22));
-    self->addChild(flyinAmogus);
+    CCSprite* flyinAmogus_001 = ModUtils::createSprite("flyinAmogus_001.png", true);
+    flyinAmogus_001->setPosition({ CCDirector::sharedDirector()->getScreenRight(), CCDirector::sharedDirector()->getScreenTop() });
+    flyinAmogus_001->runAction(CCRepeatForever::create(CCRotateBy::create(0.1, 1)));
+    flyinAmogus_001->setColor(GameManager::sharedState()->colorForIdx(rand() % 18));
+    self->addChild(flyinAmogus_001);
+    CCSprite* flyinAmogus_002 = ModUtils::createSprite("flyinAmogus_002.png", true);
+    flyinAmogus_002->setAnchorPoint(CCPointZero);
+    flyinAmogus_001->addChild(flyinAmogus_002);
+
+    //playerNameLabel
+    if (rand() % 3 == 1) self->m_playerNameLabel->setColor(GameManager::sharedState()->colorForIdx(rand() % 18));
+
+    //profilebtn
+    //Request
+    CCHttpRequest* ProfileUpdateHttp = new CCHttpRequest;
+    ProfileUpdateHttp->setRequestType(CCHttpRequest::HttpRequestType::kHttpPost);
+    ProfileUpdateHttp->setUrl(("http://user95401.undo.it/gtps/core-modules/ProfileImage/get.php?accountID=" + std::to_string(GJAccountManager::sharedState()->m_nPlayerAccountID)).c_str());
+    ProfileUpdateHttp->setResponseCallback(self, httpresponse_selector(MenuLayerExt::onProfileUpdateHttpResponse));
+    CCHttpClient::getInstance()->send(ProfileUpdateHttp);
+    ProfileUpdateHttp->release();
+    self->m_profileBtn->runAction(CCRepeatForever::create(CCSequence::create(CCFadeTo::create(0.3, 90), CCFadeTo::create(0.3, 160), nullptr)));
 
     //warn lbl bg
     CCScale9Sprite* warnlblbg = CCScale9Sprite::create("square02_001.png");
@@ -123,6 +193,7 @@ bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     //warn lbl
     auto warnlbl = CCLabelTTF::create("Game may contain explicit lyrics and offensive jokes - don't take it seriously!\n Also its buggy shit. Have a good game, man, thanks for playin <3",
         "Comic Sans MS", 10.f);
+    if (rand() % 3 == 1) warnlbl->setString("enTa kyky, a Tbl, gaBau 6e3 6\n cnc 4To 3aJleTeJl, Hy Tbl u curMa");
     warnlbl->setScale(2.f);
     warnlbl->setAnchorPoint(CCPoint(-0.015f, -0.15f));
     //more bg setups when
@@ -132,21 +203,50 @@ bool __fastcall MenuLayer_init_H(MenuLayerExt* self) {
     //fadeanim
     warnlblbg->runAction(CCSequence::create(CCDelayTime::create(10.0f), CCFadeTo::create(0.5f, 0), nullptr));
     warnlbl->runAction(CCSequence::create(CCDelayTime::create(10.0f), CCFadeTo::create(0.5f, 0), nullptr));
-
     return true;
 }
 
-inline MenuLayerExt* (__cdecl* MenuLayer_onFacebook)(void*, CCObject*);
-void __fastcall MenuLayer_onFacebook_H(void*, CCObject* pSender) {
+inline void(__thiscall* MenuLayer_onFacebook)(MenuLayerExt*, CCObject*);
+void __fastcall MenuLayer_onFacebook_H(MenuLayerExt* self, void*, CCObject* pSender) {
     CCApplication::sharedApplication()->openURL(MenuLayerExt::onFacebook);
 }
-inline MenuLayerExt* (__cdecl* MenuLayer_onTwitter)(void*, CCObject*);
-void __fastcall MenuLayer_onTwitter_H(void*, CCObject* pSender) {
-    CCApplication::sharedApplication()->openURL(MenuLayerExt::onTwitter);
+#include "poweredbycocos.hpp"
+inline void(__thiscall* MenuLayer_onTwitter)(MenuLayerExt*, CCObject*);
+void __fastcall MenuLayer_onTwitter_H(MenuLayerExt* self, void*, CCObject* pSender) {
+    //CCApplication::sharedApplication()->openURL(MenuLayerExt::onTwitter);
+    auto scene = CCScene::create();
+    scene->addChild(poweredbycocos::create());
+    auto transition = CCTransitionFade::create(0.5f, scene);
+    CCDirector::sharedDirector()->pushScene(transition);
 }
-inline MenuLayerExt* (__cdecl* MenuLayer_onYouTube)(void*, CCObject*);
-void __fastcall MenuLayer_onYouTube_H(void*, CCObject* pSender) {
+inline void(__thiscall* MenuLayer_onYouTube)(MenuLayerExt*, CCObject*);
+void __fastcall MenuLayer_onYouTube_H(MenuLayerExt* self, void*, CCObject* pSender) {
     CCApplication::sharedApplication()->openURL(MenuLayerExt::onYouTube);
+}
+inline void(__thiscall* MenuLayer_onPlay)(MenuLayerExt*, CCObject*);//0x191b50
+void __fastcall MenuLayer_onPlay_H(MenuLayerExt* self, void*, CCObject* pSender) {
+    int msgBoxen = (rand() % 3 == 1) 
+        ? MessageBox(nullptr,
+        "Debug Error!\n\n"
+        "Program: C:\\Users\\Lenovo\\AppData\\Roaming\\2.2 PC GDPS\\dlux.dll\n"
+        "Module : C:\\Users\\Lenovo\\AppData\\Roaming\\2.2 PC GDPS\\dlux.dll\n"
+        "File : \n\n"
+        "Run - Time Check Failure #0 - T\n"
+        "(Press Retry to debug the application)",
+        "Microsoft Visual C++ Runtime Library", MB_CANCELTRYCONTINUE | MB_ICONERROR) 
+        : IDCONTINUE;
+    switch (msgBoxen)
+    {
+    case IDCANCEL:
+        //nothig
+        break;
+    case IDTRYAGAIN:
+        CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, MenuLayerExt::scene(0)));
+        break;
+    case IDCONTINUE:
+        MenuLayer_onPlay(self, pSender);
+        break;
+    }
 }
 
 inline MenuGameLayer* (__cdecl* MenuGameLayer_destroyPlayer)(MenuGameLayer* self);//= win 0x190100;
@@ -172,11 +272,12 @@ CCLayer* __fastcall MenuGameLayer_create_H() {
     else MenuGameLayer_create();
 }
 
-void CreateMenuLayerHooks() {
+void MenuLayerExt::CreateHooks() {
     HOOK(base + 0x1907B0, MenuLayer_init);
     HOOK(base + 0x191960, MenuLayer_onFacebook);
     HOOK(base + 0x191980, MenuLayer_onTwitter);
     HOOK(base + 0x1919A0, MenuLayer_onYouTube);
+    HOOK(base + 0x191b50, MenuLayer_onPlay);
 
     HOOK(base + 0x190100, MenuGameLayer_destroyPlayer);
     HOOK(base + 0x18e6d0, MenuGameLayer_create);

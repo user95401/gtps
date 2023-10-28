@@ -12,6 +12,6 @@ class SoundRelated : public GameSoundManager {
 public:
 	static void playLoadingTheme();
 	inline static bool dontPlayMenuLoop;
-};
 
-void CreateSoundRelatedHooks();
+	void static CreateHooks();
+};

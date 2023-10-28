@@ -1,5 +1,5 @@
-﻿#include "PlayLayer.hpp"
-#include "PauseLayer.hpp"
+﻿#include "PlayLayerExt.hpp"
+#include "PauseLayerExt.hpp"
 #include "SoundRelated.hpp"
 
 inline void(__thiscall* customSetup)(PauseLayerExt*);//0x1e4620

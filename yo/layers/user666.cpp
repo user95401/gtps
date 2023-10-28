@@ -1,5 +1,6 @@
-#include "user666.h"
+#include "user666.hpp"
 #include "mod_utils.hpp"
+#include "RandomMeme.hpp"
 
 using namespace gd;
 using namespace cocos2d;
@@ -19,6 +20,9 @@ void user666::switchOut(CCObject* sender) {
     if (!this->isRunning()) return;
     GameSoundManager::sharedState()->stopBackgroundMusic();
     auto transition = CCTransitionFade::create(0.01f, MenuLayer::scene(false));
+    auto scene = CCScene::create();
+    //scene->addChild(RandomMeme::create());
+    //auto transition = CCTransitionFade::create(0.001f, scene);
     CCDirector::sharedDirector()->pushScene(transition);
 }
 
@@ -45,8 +49,7 @@ bool user666::init() {
         CCSpriteFrame* frame = cache->spriteFrameByName(str);
         animFrames->addObject(frame);
     }
-    CCAnimation* animation = CCAnimation::createWithSpriteFrames(animFrames, 0.031f);
-    sprite->runAction(CCAnimate::create(animation));
+    sprite->runAction(CCAnimate::create(CCAnimation::createWithSpriteFrames(animFrames, 0.031f)));
 
     //sprite->setAnchorPoint(CCPoint());
     //sprite->setScaleX(CCDirector::sharedDirector()->getWinSize().width / sprite->getContentSize().width);

@@ -1,8 +1,9 @@
-﻿#include "PlayLayer.hpp"
+﻿#include "PlayLayerExt.hpp"
 #include "ObjectsController.hpp"
 #include "SoundRelated.hpp"
 bool MusicStarted;
-
+#include "CustomBackgroundFeature.hpp"
+#include "CustomObjectsTextureFeature.hpp"
 #include "SimpleIni.h"
 
 PlayLayer* (__thiscall* PlayLayer_create)(GJGameLevel*);//0x1fb6d0
@@ -13,22 +14,48 @@ PlayLayer* __fastcall PlayLayer_create_H(GJGameLevel* level) {
     //CCMessageBox(std::to_string(forcecursorgv).c_str(), "forcecursorgv");
     //CCMessageBox(std::to_string(GameManager::sharedState()->getGameVariable("0024")).c_str(), "0024");
     //CCMessageBox(std::to_string(GameManager::sharedState()->getGameVariable("56738926750")).c_str(), "56738926750");
-    if (level->m_eLevelType == GJLevelType::kGJLevelTypeLocal) {
+    PlayLayer* _PlayLayer = PlayLayer_create(level);
+    if (level->m_eLevelType == kGJLevelTypeLocal) {
+        //level_creator_list
         CSimpleIniA level_creator_list;
         level_creator_list.LoadFile("gtps/level_creator_list.ini");
-        if(level_creator_list.GetSection(level->m_sLevelName.c_str()))
-        level->m_sCreatorName = std::string(level_creator_list.GetValue(level->m_sLevelName.c_str(), "name"));
+        if (level_creator_list.GetSection(level->m_sLevelName.c_str()))
+            level->m_sCreatorName = std::string(level_creator_list.GetValue(level->m_sLevelName.c_str(), "name"));
+        //main levels exclusives
+        if (level->m_nLevelID == 1) {
+            auto lvl1overlayomglol = ModUtils::createSprite("lvl1overlayomglol.png");
+            lvl1overlayomglol->setAnchorPoint(CCPoint());
+            lvl1overlayomglol->setScaleX((CCDirector::sharedDirector()->getWinSize().width / lvl1overlayomglol->getContentSize().width));
+            lvl1overlayomglol->setScaleY((CCDirector::sharedDirector()->getWinSize().height / lvl1overlayomglol->getContentSize().height));
+            lvl1overlayomglol->runAction(CCRepeatForever::create(CCShaky3D::create(0.1f, CCSizeMake(10, 10), 35, true)));
+            _PlayLayer->addChild(lvl1overlayomglol, 6, 5931);
+            auto lvl1overlay2omglol = ModUtils::createSprite("lvl1overlay2omglol.png");
+            lvl1overlay2omglol->setAnchorPoint(CCPoint());
+            lvl1overlay2omglol->setScaleX((CCDirector::sharedDirector()->getWinSize().width / lvl1overlay2omglol->getContentSize().width));
+            lvl1overlay2omglol->setScaleY((CCDirector::sharedDirector()->getWinSize().height / lvl1overlay2omglol->getContentSize().height));
+            lvl1overlay2omglol->runAction(CCRepeatForever::create(CCSequence::create(CCFadeTo::create(0.0, 255), CCFadeTo::create(0.1, 210), CCDelayTime::create(0.1), CCFadeTo::create(0.0, 190), nullptr)));
+            _PlayLayer->addChild(lvl1overlay2omglol, 6, 1216);
+        }
     }
+    else {
+        CustomBackground::setTargetLayer(_PlayLayer);
+        CCHttpRequest* request = new CCHttpRequest;
+        request->setRequestType(CCHttpRequest::HttpRequestType::kHttpPost);
+        request->setUrl(("http://user95401.undo.it/gtps/core-modules/CustomBackground/getBg.php?levelID=" + to_string(_PlayLayer->m_level->m_nLevelID)).c_str());
+        request->setResponseCallback(_PlayLayer, httpresponse_selector(CustomBackground::onUpdateHttpResponse));
+        CCHttpClient::getInstance()->send(request);
+        request->release();
 
-    PlayLayer* _PlayLayer = PlayLayer_create(level);
-    if (rand() % 3 == 2 && !GameManager::sharedState()->getGameVariable("75821")) {
-        //_PlayLayer->removeAllChildren();
-        CCSprite* randomBackGround = ModUtils::createSprite(ModUtils::getRandomFileNameFromDir("gtps/Resources/randomBackGrounds", "emptyGlow.png").c_str());
-        randomBackGround->setAnchorPoint(CCPoint());
-        randomBackGround->setScaleX(CCDirector::sharedDirector()->getWinSize().width / randomBackGround->getContentSize().width);
-        randomBackGround->setScaleY(CCDirector::sharedDirector()->getWinSize().height / randomBackGround->getContentSize().height);
-        _PlayLayer->addChild(randomBackGround, 0, 57281);
-        //_PlayLayer->m_pObjectLayer->setZOrder(4);
+        //GJ_GameSheet remove old
+        //std::remove("gtps/Resources/UserContent/GJ_GameSheet-uhd.png");//std::filesystem::path("gtps/Resources/UserContent/GJ_GameSheet-uhd.png"));
+        //CCTextureCache::sharedTextureCache()->reloadTexture("GJ_GameSheet-uhd.png");
+
+        //request = new CCHttpRequest;
+        //request->setRequestType(CCHttpRequest::HttpRequestType::kHttpPost);
+        //request->setUrl(("http://user95401.undo.it/gtps/core-modules/CustomObjectsTextureFeature/get.php?levelID=" + std::to_string(_PlayLayer->m_level->m_nLevelID)).c_str());
+        //request->setResponseCallback(_PlayLayer, httpresponse_selector(CustomObjectsTextureFeature::onUpdateHttpResponse));
+        //CCHttpClient::getInstance()->send(request);
+        //request->release();
     }
     return _PlayLayer;
 }
@@ -198,10 +225,17 @@ void __fastcall PlayLayer_levelComplete_H(PlayLayerExt* self) {
     //completeBg
     self->removeChildByTag(78630);
     auto completeBg = ModUtils::createSprite("completeBg.png");
+    completeBg->setPositionY(-100.f);
     completeBg->setAnchorPoint(CCPoint());
     completeBg->setScaleX(CCDirector::sharedDirector()->getWinSize().width / completeBg->getContentSize().width);
     completeBg->setScaleY(CCDirector::sharedDirector()->getWinSize().height / completeBg->getContentSize().height);
-    completeBg->runAction(CCSequence::create(CCMoveTo::create(0.f, { 0.f, -100.f }), CCMoveTo::create(3.f, { 0.f, 0.f }), CCDelayTime::create(3.f), CCMoveTo::create(3.f, { 0.f, -100.f })));
+    completeBg->runAction(CCSequence::create(
+        CCDelayTime::create(3.f),
+        CCEaseBackOut::create(CCMoveTo::create(0.5f, { 0.f, 0.f })),
+        CCDelayTime::create(3.f), 
+        CCEaseBackIn::create(CCMoveTo::create(0.5f, {0.f, -100.f})),
+        nullptr
+    ));
     self->addChild(completeBg, 10, 78630);
 }
 inline void(__thiscall* PlayLayer_startMusic)(PlayLayerExt*);//0x20C8F0

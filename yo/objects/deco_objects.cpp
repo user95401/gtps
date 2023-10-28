@@ -9,6 +9,7 @@ void deco_objects::triggerObject(GameObject* self, GJBaseGameLayer* baseGameLaye
 void deco_objects::customSetup(GameObject* self) {
     if (self->m_sTextureName.find("SwissArcadeGameEntertainment_some_black_white_tiles") != self->m_sTextureName.npos) {
         self->m_nObjectType = GameObjectType::kGameObjectTypeDecoration;
+        self->setBatchNode(CCSpriteBatchNode::create(".CustomBackground", 1233));
     }
     if (self->m_sTextureName.find("idk_theme") != self->m_sTextureName.npos) {
         self->m_nObjectType = GameObjectType::kGameObjectTypeDecoration;

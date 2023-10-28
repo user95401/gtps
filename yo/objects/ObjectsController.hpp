@@ -3,7 +3,7 @@
 #include <MinHook.h>
 #include <cocos2d.h>
 #include <gd.h>
-#include "PlayLayer.hpp"
+#include "PlayLayerExt.hpp"
 #include "LevelEditor.hpp"
 using namespace cocos2d;
 using namespace cocos2d::extension;

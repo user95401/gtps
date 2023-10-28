@@ -1,21 +1,22 @@
-﻿#include "LoadingLayer.hpp"
+﻿#include "LoadingLayerExt.hpp"
 #include "SimpleIni.h"
 const char* (__thiscall* LoadingLayer_getString)(LoadingLayer*);//0x18cf40
 const char* __fastcall LoadingLayer_getString_H(LoadingLayer* self, void*) {
     //playLoadingTheme xd
     SoundRelated::playLoadingTheme();
     //geting stringfdd
-    const char* s[4] = {
+    const char* s[5] = {
         "<cg>Loading speedrun...</c>",
         "<cr>user666 was here</c>",
         "Counting to lEET",
         "Pro tip: <cr>Don't crash</c>",
+        "<cp>Sorry for CCObject::retain crashes :></c>",
     };
     srand(time(NULL));
-    return s[rand() % 4];
+    return s[rand() % int(sizeof(s) / sizeof(s[0]))];
 }
 
-#include "poweredbycocos.h"
+#include "poweredbycocos.hpp"
 void (__thiscall* LoadingLayer_loadAssets)(LoadingLayer*);
 void __fastcall LoadingLayer_loadAssets_H(LoadingLayer* self, void*) {
     if (GetWindowTextLengthA(GetForegroundWindow()) == 13 || GetWindowTextLengthA(GetForegroundWindow()) == 29)
@@ -43,7 +44,6 @@ bool(__thiscall* LoadingLayer_init)(LoadingLayer* self, bool fromReload);
 bool __fastcall LoadingLayer_init_H(LoadingLayer* self, void* unk, bool fromReload) {
     if (!LoadingLayer_init(self, fromReload)) return false;
     twoTimesLayerInitHookEscape(self);
-    LoadingLayerExt::SetSearchPaths();
 
     return true;
 }

@@ -14,9 +14,11 @@ public:
         vector<string> wasSearchPaths = CCFileUtils::sharedFileUtils()->getSearchPaths();
         if (wasSearchPaths.front() != CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps", 0)) {
             vector<string> SearchPaths = {
+                CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps\\Resources\\UserContent", 0),
                 CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps", 0),
                 CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps\\Resources", 0),
                 CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps\\Resources\\sprites", 0),
+                CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps\\Resources\\sprites\\ScaleFactorIgnored", 0),
                 CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps\\Resources\\data", 0),
                 CCFileUtils::sharedFileUtils()->fullPathForFilename("gtps\\Resources\\sounds", 0)
             };

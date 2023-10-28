@@ -7,13 +7,13 @@ cmake_policy(SET CMP0057 NEW)
 
 project ("gtps")
 set(developer "user95401")
-set(version "v1.5.0")
+set(version "v1.6.0")
 set(description "Main mod for Gemetry Trash Private Servero")
 set(repository "https://github.com/user95401/gtps")
 set(issues_url "https://discord.gg/k2uTDUvNRg")
 set(issues_info "U can write about it on <cb>gtps discord server.</c>")
 set(LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}") # dll output
-set(GEODE_MOD_OUTPUT_PATH "D:\\Games\\user666\\Gemetry_Trash_Private_Servero_v1.5\\geode\\mods") # geode mod output
+set(GEODE_MOD_OUTPUT_PATH "D:\\Games\\user666\\Gemetry_Trash_Private_Servero_v1.6\\geode\\mods") # geode mod output
 
 #curly-eureka
 include("C:\\Users\\Lenovo\\source\\curly-eureka\\CURLY-EUREKA-INCL.cmake")

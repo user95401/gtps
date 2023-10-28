@@ -1,5 +1,5 @@
-#include "poweredbycocos.h"
-#include "user666.h"
+#include "poweredbycocos.hpp"
+#include "user666.hpp"
 #include "mod_utils.hpp"
 
 using namespace gd;
